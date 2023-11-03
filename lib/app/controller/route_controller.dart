@@ -7,9 +7,9 @@
   Copyright and Good Faith Purchasers © 2023-present initappz.
 */
 import 'package:flutter/material.dart';
-import 'package:geocoding/geocoding.dart';
+//import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+//import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../backend/model/point_model.dart';
 import '../backend/parse/route_parse.dart';
 
@@ -21,7 +21,8 @@ class RouteController extends GetxController implements GetxService {
   List<Point> points = [];
   var pinnedLocationOnMap = Point().obs;
   var isPinMarkerVisible = false.obs;
-  var isExpanded = false.obs;
+  //var isExpanded = false.obs;
+  var widgetOpacity = 0.0.obs;
 
   void addPoint(Point point) {
     points.add(point);
