@@ -21,7 +21,7 @@ class RouteController extends GetxController implements GetxService {
   List<Point> points = [];
   var pinnedLocationOnMap = Point().obs;
   var isPinMarkerVisible = false.obs;
-  //var isExpanded = false.obs;
+  var isExpanded = false.obs;
   var widgetOpacity = 0.0.obs;
 
   void addPoint(Point point) {
