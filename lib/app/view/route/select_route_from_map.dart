@@ -12,6 +12,8 @@ import 'package:handyman/app/util/theme.dart';
 import 'package:handyman/app/widget/elevated_button.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
+import '../../controller/find_location_controller.dart';
+
 class SelectLocationFromMap extends StatefulWidget {
   const SelectLocationFromMap({super.key});
 
@@ -268,41 +270,39 @@ class _SelectLocationFromMapState extends State<SelectLocationFromMap> {
                                           const SizedBox(
                                             width: 10.0,
                                           ),
-                                          Obx(
-                                            () => Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    routeController!
-                                                        .pinnedLocationOnMap
-                                                        .value
-                                                        .placeHeader!
-                                                        .toString(),
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: const TextStyle(
-                                                        fontSize: 15,
-                                                        color: Colors.black,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  ),
-                                                  Text(
-                                                    routeController!
-                                                        .pinnedLocationOnMap
-                                                        .value
-                                                        .placeDetails!
-                                                        .toString(),
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    maxLines: 2,
-                                                    style: const TextStyle(
-                                                        fontSize: 14,
-                                                        color: Colors.grey),
-                                                  ),
-                                                ],
-                                              ),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  routeController!
+                                                      .pinnedLocationOnMap
+                                                      .value
+                                                      .placeHeader!
+                                                      .toString(),
+                                                  overflow:
+                                                  TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                      fontSize: 15,
+                                                      color: Colors.black,
+                                                      fontWeight:
+                                                      FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  routeController!
+                                                      .pinnedLocationOnMap
+                                                      .value
+                                                      .placeDetails!
+                                                      .toString(),
+                                                  overflow:
+                                                  TextOverflow.ellipsis,
+                                                  maxLines: 2,
+                                                  style: const TextStyle(
+                                                      fontSize: 14,
+                                                      color: Colors.grey),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ],
@@ -371,93 +371,126 @@ class _SelectLocationFromMapState extends State<SelectLocationFromMap> {
                                         color: Colors.blueGrey.shade50,
                                         borderRadius: BorderRadius.circular(30),
                                       ),
-                                      child: Expanded(
-                                        child: TextField(
-                                          decoration: InputDecoration(
-                                            hintText: "Enter your destination",
-
-                                            hintStyle: TextStyle(color: Colors.grey.shade500,),
-                                            border: InputBorder.none,
-                                            prefixIcon: Padding(
-                                              padding: const EdgeInsets.symmetric(vertical: 12),
-                                              child: Icon(
-                                                Icons.search,
-                                                size: 24,
-                                                color: Colors.grey.shade500,
-                                              )
+                                      child: Row(
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                                            child: Icon(
+                                              Icons.search,
+                                              size: 24,
+                                              color: Colors.grey.shade500,
                                             ),
                                           ),
-                                        ),
+                                          Expanded(
+                                            child: TextField(
+                                              decoration: InputDecoration(
+                                                hintText: "Enter your destination",
+                                                hintStyle: TextStyle(color: Colors.grey.shade500),
+                                                border: InputBorder.none,
+
+                                              ),
+                                              onChanged: (content) {
+                                                routeController!.onSearchChanged(content);
+                                              },
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
                                   const Padding(
                                     padding: EdgeInsets.all(8.0),
-                                    child: Expanded(
-                                      child: SingleChildScrollView(
-                                        scrollDirection: Axis.horizontal,
-                                        child: Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 8.0),
-                                          child: Row(
-                                            children: [
-                                              Padding(
-                                                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                                child: Text(
-                                                  "Suggestions",
-                                                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-                                                  ),
-                                                ),
-                                              Padding(
-                                                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                                child: Text(
-                                                  "Airports",
-                                                  style: TextStyle(color: Colors.grey, fontWeight: FontWeight.normal),
-                                                  ),
-                                                ),
-                                              Padding(
-                                                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                                child: Text(
-                                                  "DineOut",
-                                                  style: TextStyle(color: Colors.grey, fontWeight: FontWeight.normal),
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                                child: Text(
-                                                  "Malls",
-                                                  style: TextStyle(color: Colors.grey, fontWeight: FontWeight.normal),
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                                child: Text(
-                                                  "Attractions",
-                                                  style: TextStyle(color: Colors.grey, fontWeight: FontWeight.normal),
-                                                ),
-                                              ),
-                                              ]
+                                    child: SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Row(
+                                        children: [
+                                          Padding(
+                                            padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                            child: Text(
+                                              "Suggestions",
+                                              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                                             ),
-                                        ),
-                                        ),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                            child: Text(
+                                              "Airports",
+                                              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.normal),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                            child: Text(
+                                              "DineOut",
+                                              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.normal),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                            child: Text(
+                                              "Malls",
+                                              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.normal),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                            child: Text(
+                                              "Attractions",
+                                              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.normal),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    ),
+                                  ),
                                   const Divider(
                                     height: 4,
                                     thickness: 4,
                                     color: Color(0xFFF8F8F8),
                                   ),
-                                  Expanded(
-                                    child: SingleChildScrollView( // or use ListView
-                                      child: Column(
-                                        children: List.generate(
-                                          20,
-                                              (index) => ListTile(
-                                            title: Text('Item $index'),
+                                  routeController!.getList.isNotEmpty
+                                      ? Container(
+                                          decoration:
+                                          const BoxDecoration(color: ThemeProvider.whiteColor),
+                                          child: Column(
+                                            children: [
+                                              for (var item in routeController!.getList)
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                      horizontal: 15, vertical: 15),
+                                                  child: InkWell(
+                                                    onTap: () async {
+                                                      panelController.close();
+                                                      _newGoogleMapController!.animateCamera(CameraUpdate.newLatLng(await routeController!.getLatLngFromAddress(
+                                                          item.description.toString())));
+                                                    },
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.my_location,
+                                                          size: 22,
+                                                          color: Colors.black.withOpacity(0.6),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 10,
+                                                        ),
+                                                        Flexible(
+                                                          child: Text(
+                                                            item.description!,
+                                                            style: const TextStyle(
+                                                              fontSize: 17,
+                                                            ),
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                )
+                                            ],
                                           ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                                        )
+                                      : const SizedBox(),
                                 ],
                               ),
                             ),
