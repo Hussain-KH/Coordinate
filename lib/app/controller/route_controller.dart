@@ -1,3 +1,4 @@
+import 'package:custom_map_markers/custom_map_markers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../backend/model/point_model.dart';
@@ -21,13 +22,93 @@ class RouteController extends GetxController implements GetxService {
   Rx<bool> isCameraMoving = false.obs;
   RxDouble widgetOpacity = 0.0.obs;
   RxList<GooglePlacesModel> getList = <GooglePlacesModel>[].obs;
-  RxSet<Marker> markers = <Marker>{}.obs;
+  RxList<MarkerData> markers = <MarkerData>[].obs;
+  RxSet<Circle> circles = <Circle>{}.obs;
 
-  void addPoint(Point point, String markerId) async {
+  void addPoint(Point point) {
+    // markers.add(
+    //   Marker(
+    //     markerId: MarkerId(markerId),
+    //     position: LatLng(point.latitude!, point.longitude!),
+    //   ),
+    // );
     markers.add(
-      Marker(
-        markerId: MarkerId(markerId),
-        position: LatLng(point.latitude!, point.longitude!),
+      MarkerData(
+        marker: Marker(
+            markerId: MarkerId(point.id!.toString()),
+            position: LatLng(point.latitude!, point.longitude!),
+        ),
+        child: Stack(
+          children: [
+            const Icon(
+              Icons.location_on,
+              color: Colors.blue,
+              size: 50,
+            ),
+            Positioned(
+              left: 15,
+              top: 8,
+              child: Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                    color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                child: Center(child: Text(point.id!.toString())),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+
+    circles.add(
+      Circle(
+        circleId: CircleId(point.id!.toString()),
+        center: LatLng(point.latitude!, point.longitude!),
+        radius: 100,
+        strokeWidth: 0,
+        fillColor: Colors.blue
+            .withOpacity(0.2),
+      ),
+    );
+    circles.add(
+      Circle(
+        circleId: CircleId("${point.id!}2"),
+        center: LatLng(point.latitude!, point.longitude!),
+        radius: 200,
+        strokeWidth: 0,
+        fillColor: Colors.blue
+            .withOpacity(0.18),
+      ),
+    );
+    circles.add(
+      Circle(
+        circleId: CircleId("${point.id!}3"),
+        center: LatLng(point.latitude!, point.longitude!),
+        radius: 300,
+        strokeWidth: 0,
+        fillColor: Colors.blue
+            .withOpacity(0.16),
+      ),
+    );
+    circles.add(
+      Circle(
+        circleId: CircleId("${point.id!}4"),
+        center: LatLng(point.latitude!, point.longitude!),
+        radius: 450,
+        strokeWidth: 0,
+        fillColor: Colors.blue
+            .withOpacity(0.14),
+      ),
+    );
+    circles.add(
+      Circle(
+        circleId: CircleId("${point.id!}5"),
+        center: LatLng(point.latitude!, point.longitude!),
+        radius: 600,
+        strokeWidth: 0,
+        fillColor: Colors.blue
+            .withOpacity(0.12),
       ),
     );
   }

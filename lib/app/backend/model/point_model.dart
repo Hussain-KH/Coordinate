@@ -1,4 +1,5 @@
 class Point {
+  int? id;
   String? placeHeader;
   String? placeDetails;
   String? placeId;
@@ -7,6 +8,7 @@ class Point {
 
   Point(
   {
+    this.id,
     this.placeHeader,
     this.placeDetails,
     this.placeId,
@@ -15,6 +17,7 @@ class Point {
   });
 
   Point.fromJson(Map<String, dynamic> json) {
+    id = int.parse(json['id'].toString());
     placeHeader = json['place_name'].toString();
     placeDetails = json['place_details'].toString();
     placeId = json['place_id'].toString();
@@ -24,6 +27,7 @@ class Point {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
     data['place_name'] = placeHeader;
     data['place_details'] = placeDetails;
     data['place_id'] = placeId;
