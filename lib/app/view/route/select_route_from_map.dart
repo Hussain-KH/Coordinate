@@ -11,8 +11,7 @@ import 'package:handyman/app/controller/route_controller.dart';
 import 'package:handyman/app/util/theme.dart';
 import 'package:handyman/app/widget/elevated_button.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-
-import '../../controller/find_location_controller.dart';
+import 'package:shimmer/shimmer.dart';
 
 class SelectLocationFromMap extends StatefulWidget {
   const SelectLocationFromMap({super.key});
@@ -34,9 +33,8 @@ class _SelectLocationFromMapState extends State<SelectLocationFromMap> {
   Uint8List pickUpMarker = Uint8List.fromList([]);
   final placeTextEditor = TextEditingController();
   RouteController? routeController;
-  //bool _isExpanded = false;
   final panelController = PanelController();
-  double minHeight = 180;
+  double minHeight = 175;
 
   checkIfLocationPermissionAllowed() async {
     _locationPermission = await Geolocator.requestPermission();
@@ -95,6 +93,7 @@ class _SelectLocationFromMapState extends State<SelectLocationFromMap> {
   void _getPinnedAddress() async {
     routeController!.isPinMarkerVisible.value = false;
     await pickOriginPositionOnMap(onCameraMoveEndLatLng!);
+    routeController!.isCameraMoving.value = false;
   }
 
   @override
@@ -122,22 +121,27 @@ class _SelectLocationFromMapState extends State<SelectLocationFromMap> {
           : Center(
               child: Stack(
                 children: [
-                  GoogleMap(
-                    mapType: MapType.normal,
-                    myLocationButtonEnabled: false,
-                    myLocationEnabled: true,
-                    zoomGesturesEnabled: true,
-                    zoomControlsEnabled: true,
-                    initialCameraPosition: _cameraPosition!,
-                    onCameraMove: (position) async {
-                      routeController!.isPinMarkerVisible.value = true;
-                      onCameraMoveEndLatLng = position.target;
-                    },
-                    onCameraIdle: _getPinnedAddress,
-                    onMapCreated: (GoogleMapController controller) {
-                      _controllerGoogleMap.complete(controller);
-                      _newGoogleMapController = controller;
-                    },
+                  Obx(
+                    () => GoogleMap(
+                          mapType: MapType.normal,
+                          myLocationButtonEnabled: false,
+                          myLocationEnabled: true,
+                          zoomGesturesEnabled: true,
+                          zoomControlsEnabled: true,
+                          // ignore: invalid_use_of_protected_member
+                          markers: routeController!.markers.value,
+                          initialCameraPosition: _cameraPosition!,
+                          onCameraMove: (position) async {
+                            routeController!.isCameraMoving.value = true;
+                            routeController!.isPinMarkerVisible.value = true;
+                            onCameraMoveEndLatLng = position.target;
+                          },
+                          onCameraIdle: _getPinnedAddress,
+                          onMapCreated: (GoogleMapController controller) {
+                            _controllerGoogleMap.complete(controller);
+                            _newGoogleMapController = controller;
+                          },
+                        ),
                   ),
                   Positioned(
                     bottom: minHeight + 10, // Adjust the top position as needed
@@ -224,130 +228,231 @@ class _SelectLocationFromMapState extends State<SelectLocationFromMap> {
                       () => routeController!.widgetOpacity.value < 0.2
                           ? Opacity(
                               opacity: 1 - (routeController!.widgetOpacity.value * 4),
-                              child: Container(
-                                decoration: const BoxDecoration(
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(
-                                        35.0), // Adjust the value as needed
-                                    topRight: Radius.circular(
-                                        35.0), // Adjust the value as needed
-                                  ),
-                                  color: Colors.white,
-                                ),
-                                height: minHeight,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 15.0, vertical: 10.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: const BorderRadius.all(Radius.circular(35)),
-                                          color: Colors.grey.shade300,
+                              child: routeController!.isCameraMoving.value
+                                  ? Container(
+                                      decoration: const BoxDecoration(
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(35.0),
+                                          topRight: Radius.circular(35.0),
                                         ),
-                                        height: 5,
-                                        width: 70,
+                                        color: Colors.white,
                                       ),
-                                      const SizedBox(height: 15.0),
-                                      Row(
-                                        children: [
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Colors.grey
-                                                  .withOpacity(0.15),
-                                            ),
-                                            child: const Padding(
-                                              padding: EdgeInsets.all(11.0),
-                                              child: Icon(
-                                                Icons.search,
-                                                color: ThemeProvider.appColor,
-                                                size: 30,
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            width: 10.0,
-                                          ),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  routeController!
-                                                      .pinnedLocationOnMap
-                                                      .value
-                                                      .placeHeader!
-                                                      .toString(),
-                                                  overflow:
-                                                  TextOverflow.ellipsis,
-                                                  style: const TextStyle(
-                                                      fontSize: 15,
-                                                      color: Colors.black,
-                                                      fontWeight:
-                                                      FontWeight.bold),
+                                      height: minHeight,
+                                      child: Shimmer.fromColors(
+                                        baseColor: Colors.grey.shade300,
+                                        highlightColor: Colors.grey.shade100,
+                                        period: const Duration(seconds: 2),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  borderRadius: const BorderRadius.all(Radius.circular(35)),
+                                                  color: Colors.grey.shade300,
                                                 ),
-                                                Text(
-                                                  routeController!
-                                                      .pinnedLocationOnMap
-                                                      .value
-                                                      .placeDetails!
-                                                      .toString(),
-                                                  overflow:
-                                                  TextOverflow.ellipsis,
-                                                  maxLines: 2,
-                                                  style: const TextStyle(
-                                                      fontSize: 14,
-                                                      color: Colors.grey),
+                                                height: 5,
+                                                width: 70,
+                                              ),
+                                              const SizedBox(height: 15.0),
+                                              Row(
+                                                children: [
+                                                  Container(
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      color: Colors.grey.withOpacity(0.15),
+                                                    ),
+                                                    child: const Padding(
+                                                      padding: EdgeInsets.all(11.0),
+                                                      child: Icon(
+                                                        Icons.search,
+                                                        color: ThemeProvider.appColor,
+                                                        size: 30,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    width: 10.0,
+                                                  ),
+                                                  Expanded(
+                                                    child: Padding(
+                                                      padding: EdgeInsets.only(right: (MediaQuery.of(context).size.width * 0.2)),
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          Padding(
+                                                            padding: EdgeInsets.only(right: (MediaQuery.of(context).size.width * 0.25)),
+                                                            child: Container(
+                                                              height: 20,
+                                                              decoration: BoxDecoration(
+                                                                color: Colors.black,
+                                                                borderRadius: BorderRadius.circular(7.5), // Adjust the radius as needed
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          const SizedBox(height: 5,),
+                                                          Container(
+                                                            height: 15,
+                                                            decoration: BoxDecoration(
+                                                              color: Colors.black,
+                                                              borderRadius: BorderRadius.circular(7.5), // Adjust the radius as needed
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              SizedBox(height: minHeight - 150),
+                                              Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                                child: MyElevatedButton(
+                                                  onPressed: () {},
+                                                  color: ThemeProvider.appColor,
+                                                  height: 45,
+                                                  width: double.infinity,
+                                                  child: Text(
+                                                    'Pick place on map'.tr,
+                                                    style: const TextStyle(
+                                                        letterSpacing: 1,
+                                                        fontSize: 16,
+                                                        color: ThemeProvider.whiteColor,
+                                                        fontFamily: 'bold'),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : Container(
+                                      decoration: const BoxDecoration(
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(
+                                              35.0), // Adjust the value as needed
+                                          topRight: Radius.circular(
+                                              35.0), // Adjust the value as needed
+                                        ),
+                                        color: Colors.white,
+                                      ),
+                                      height: minHeight,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 15.0, vertical: 10.0),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                borderRadius: const BorderRadius.all(Radius.circular(35)),
+                                                color: Colors.grey.shade300,
+                                              ),
+                                              height: 5,
+                                              width: (MediaQuery.of(context).size.width * 0.2),
+                                            ),
+                                            const SizedBox(height: 15.0),
+                                            Row(
+                                              children: [
+                                                Container(
+                                                  decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: Colors.grey
+                                                        .withOpacity(0.15),
+                                                  ),
+                                                  child: const Padding(
+                                                    padding: EdgeInsets.all(11.0),
+                                                    child: Icon(
+                                                      Icons.search,
+                                                      color: ThemeProvider.appColor,
+                                                      size: 30,
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(
+                                                  width: 10.0,
+                                                ),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        routeController!
+                                                            .pinnedLocationOnMap
+                                                            .value
+                                                            .placeHeader!
+                                                            .toString(),
+                                                        overflow:
+                                                        TextOverflow.ellipsis,
+                                                        maxLines: 1,
+                                                        style: const TextStyle(
+                                                            fontSize: 15,
+                                                            color: Colors.black,
+                                                            fontWeight:
+                                                            FontWeight.bold),
+                                                      ),
+                                                      const SizedBox(height: 5,),
+                                                      Text(
+                                                        routeController!
+                                                            .pinnedLocationOnMap.value.placeDetails!
+                                                            .toString(),
+                                                        overflow: TextOverflow.ellipsis,
+                                                        maxLines: 1,
+                                                        style: const TextStyle(
+                                                          fontSize: 14,
+                                                          color: Colors.grey,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
                                               ],
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: minHeight - 150), // this expanded
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8.0),
-                                        child: MyElevatedButton(
-                                          onPressed: () {
-                                            routeController!.addPoint(
-                                              Point(
-                                                  placeHeader: routeController!
-                                                      .pinnedLocationOnMap
-                                                      .value
-                                                      .placeHeader,
-                                                  latitude: routeController!
-                                                      .pinnedLocationOnMap
-                                                      .value
-                                                      .latitude,
-                                                  longitude: routeController!
-                                                      .pinnedLocationOnMap
-                                                      .value
-                                                      .longitude),
-                                            );
-                                            routeController!.onBack();
-                                          },
-                                          color: ThemeProvider.appColor,
-                                          height: 45,
-                                          width: double.infinity,
-                                          child: Text(
-                                            'Pick place on map'.tr,
-                                            style: const TextStyle(
-                                                letterSpacing: 1,
-                                                fontSize: 16,
-                                                color: ThemeProvider.whiteColor,
-                                                fontFamily: 'bold'),
-                                          ),
+                                            SizedBox(height: minHeight - 150), // this expanded
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8.0),
+                                              child: MyElevatedButton(
+                                                onPressed: () {
+                                                  routeController!.addPoint(
+                                                      Point(
+                                                          placeHeader: routeController!
+                                                              .pinnedLocationOnMap
+                                                              .value
+                                                              .placeHeader,
+                                                          latitude: routeController!
+                                                              .pinnedLocationOnMap
+                                                              .value
+                                                              .latitude,
+                                                          longitude: routeController!
+                                                              .pinnedLocationOnMap
+                                                              .value
+                                                              .longitude),
+                                                      (routeController!.markers.length + 1).toString(),
+                                                  );
+                                                  //routeController!.onBack();
+                                                },
+                                                color: ThemeProvider.appColor,
+                                                height: 45,
+                                                width: double.infinity,
+                                                child: Text(
+                                                  'Pick place on map'.tr,
+                                                  style: const TextStyle(
+                                                      letterSpacing: 1,
+                                                      fontSize: 16,
+                                                      color: ThemeProvider.whiteColor,
+                                                      fontFamily: 'bold'),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                    ),
                               ),
-                            )
+                          )
                           : Opacity(
                               opacity: routeController!.widgetOpacity.value,
                               child: Column(

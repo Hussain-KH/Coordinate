@@ -1,11 +1,3 @@
-/*
-  Authors : initappz (Rahul Jograna)
-  Website : https://initappz.com/
-  App Name : Handy Service Full App Flutter V2
-  This App Template Source code is licensed as per the
-  terms found in the Website https://initappz.com/license
-  Copyright and Good Faith Purchasers © 2023-present initappz.
-*/
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../backend/model/point_model.dart';
@@ -24,17 +16,20 @@ class RouteController extends GetxController implements GetxService {
 
   List<Point> points = [];
   Rx<Point> pinnedLocationOnMap = Point().obs;
-  var isPinMarkerVisible = false.obs;
-  var isExpanded = false.obs;
-  var widgetOpacity = 0.0.obs;
+  Rx<bool> isPinMarkerVisible = false.obs;
+  Rx<bool> isExpanded = false.obs;
+  Rx<bool> isCameraMoving = false.obs;
+  RxDouble widgetOpacity = 0.0.obs;
   RxList<GooglePlacesModel> getList = <GooglePlacesModel>[].obs;
+  RxSet<Marker> markers = <Marker>{}.obs;
 
-  double myLat = 21.5397106;
-  double myLng = 71.8215543;
-
-  void addPoint(Point point) {
-    points.add(point);
-    update();
+  void addPoint(Point point, String markerId) async {
+    markers.add(
+      Marker(
+        markerId: MarkerId(markerId),
+        position: LatLng(point.latitude!, point.longitude!),
+      ),
+    );
   }
 
   void reorderPoints(oldIndex, newIndex) {
@@ -68,10 +63,10 @@ class RouteController extends GetxController implements GetxService {
       var body = myMap['predictions'];
       getList.value = [];
       body.forEach((data) {
-        GooglePlacesModel datas = GooglePlacesModel.fromJson(data);
-        getList.add(datas);
+        GooglePlacesModel placeData = GooglePlacesModel.fromJson(data);
+        getList.add(placeData);
       });
-      //update();
+
       getList.refresh();
     } else {
       ApiChecker.checkApi(response);
@@ -82,9 +77,7 @@ class RouteController extends GetxController implements GetxService {
     List<Location> locations = await locationFromAddress(address);
     if (locations.isNotEmpty) {
       getList.value = [];
-      myLat = locations[0].latitude;
-      myLng = locations[0].longitude;
-      return LatLng(myLat, myLng);
+      return LatLng(locations[0].latitude, locations[0].longitude);
     }
     return LatLng(pinnedLocationOnMap.value.latitude!, pinnedLocationOnMap.value.longitude!);
   }
