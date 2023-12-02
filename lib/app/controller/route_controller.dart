@@ -28,8 +28,9 @@ class RouteController extends GetxController implements GetxService {
   Rx<bool> isMarkerAdded = false.obs;
   Rx<bool> isMarkerSelected = false.obs;
   int selectedMarkerIndex = -1;
+  String intersectCircleId = '';
 
-  void addPoint(Point point) {
+  void addPoint(Point point, BuildContext? context) {
     if(checkIfMarkerInsideCircle(LatLng(point.latitude!, point.longitude!))){
       isMarkerAdded.value = true;
       markers.add(
@@ -66,47 +67,6 @@ class RouteController extends GetxController implements GetxService {
         ),
       );
 
-      // circles.add(
-      //   Circle(
-      //     circleId: CircleId(point.id!.toString()),
-      //     center: LatLng(point.latitude!, point.longitude!),
-      //     radius: 100,
-      //     strokeWidth: 0,
-      //     fillColor: Colors.blue
-      //         .withOpacity(0.2),
-      //   ),
-      // );
-      // circles.add(
-      //   Circle(
-      //     circleId: CircleId("${point.id!}2"),
-      //     center: LatLng(point.latitude!, point.longitude!),
-      //     radius: 200,
-      //     strokeWidth: 0,
-      //     fillColor: Colors.blue
-      //         .withOpacity(0.18),
-      //   ),
-      // );
-      // circles.add(
-      //   Circle(
-      //     circleId: CircleId("${point.id!}3"),
-      //     center: LatLng(point.latitude!, point.longitude!),
-      //     radius: 300,
-      //     strokeWidth: 0,
-      //     fillColor: Colors.blue
-      //         .withOpacity(0.16),
-      //   ),
-      // );
-      // circles.add(
-      //   Circle(
-      //     circleId: CircleId("${point.id!}4"),
-      //     center: LatLng(point.latitude!, point.longitude!),
-      //     radius: 450,
-      //     strokeWidth: 0,
-      //     fillColor: Colors.blue
-      //         .withOpacity(0.14),
-      //   ),
-      // );
-
       circles.add(
         Circle(
           circleId: CircleId(point.id.toString()),
@@ -118,12 +78,17 @@ class RouteController extends GetxController implements GetxService {
         ),
       );
     } else {
-
+      ScaffoldMessenger.of(context!).showSnackBar(
+        SnackBar(
+          content: Text('Too close to point number: $intersectCircleId'),
+          duration: const Duration(milliseconds: 1350),
+          behavior: SnackBarBehavior.floating, // Use SnackBarBehavior.fixed for a fixed position
+        ),
+      );
     }
   }
 
   void updatePoint(LatLng lastSelectedLatLng) {
-    print(selectedMarkerIndex.toString());
     markers.removeWhere((marker) => marker.marker.markerId == MarkerId(selectedMarkerIndex.toString()));
     circles.removeWhere((circle) => circle.circleId == CircleId(selectedMarkerIndex.toString()));
     Point point = Point(id: selectedMarkerIndex, latitude: lastSelectedLatLng.latitude, longitude: lastSelectedLatLng.longitude);
@@ -179,7 +144,6 @@ class RouteController extends GetxController implements GetxService {
   }
 
   void deletePoint() {
-    print(selectedMarkerIndex.toString());
     List<MarkerData> remainingMarkers = markers.sublist(selectedMarkerIndex);
     markers.value = markers.sublist(0, selectedMarkerIndex - 1);
     // ignore: invalid_use_of_protected_member
@@ -188,15 +152,10 @@ class RouteController extends GetxController implements GetxService {
     for(int i = 0; i < remainingMarkers.length; i++){
       LatLng oldMarker = remainingMarkers[i].marker.position;
       Point point = Point(id: i + selectedMarkerIndex, latitude: oldMarker.latitude, longitude: oldMarker.longitude);
-      addPoint(point);
+      addPoint(point, null);
     }
 
     removeMarkerSelection();
-  }
-
-  void removeMarkerSelection() {
-    isMarkerSelected.value = false;
-    selectedMarkerIndex = -1;
   }
 
   bool checkIfMarkerInsideCircle(LatLng newMarker) {
@@ -205,7 +164,6 @@ class RouteController extends GetxController implements GetxService {
       LatLng circleCenter = circle.center;
       double circleRadius = circle.radius;
 
-      // Use the Google Maps geometry library to calculate distance between points
       double distance = Geolocator.distanceBetween(
         circleCenter.latitude,
         circleCenter.longitude,
@@ -214,10 +172,17 @@ class RouteController extends GetxController implements GetxService {
       );
 
       if (distance <= circleRadius) {
+        print('Marker is inside Circle: ${circle.circleId.value}');
+        intersectCircleId = circle.circleId.value;
         return false;
       }
     }
     return true;
+  }
+
+  void removeMarkerSelection() {
+    isMarkerSelected.value = false;
+    selectedMarkerIndex = -1;
   }
 
   void reorderRoutes(oldIndex, newIndex) {

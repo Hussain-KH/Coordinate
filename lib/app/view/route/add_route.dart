@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:handyman/app/controller/route_controller.dart';
 import 'package:handyman/app/view/route/select_route_from_map.dart';
-import 'package:handyman/app/widget/elevated_button.dart';
 
 import '../../util/theme.dart';
 
@@ -41,22 +40,6 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
           padding: const EdgeInsets.all(12),
           child: Column(
             children: [
-              Card(
-                child: ListTile(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const SelectLocationFromMap()),
-                    );
-                    //Get.offNamed(AppRouter.selectLocationFromMap());
-                  },
-                  visualDensity: const VisualDensity(vertical: -3),
-                  minLeadingWidth: 0,
-                  title: heading4('Add New Point'.tr),
-                  trailing: const Icon(Icons.add),
-                ),
-              ),
-              const SizedBox(height: 5,),
               Expanded(
                 child: ReorderableListView(
                   proxyDecorator: (Widget child, int index, Animation<double> animation) {
@@ -91,25 +74,22 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                   ],
                 ),
               ),
-              MyElevatedButton(
-                onPressed: () {
-
-                },
-                color: ThemeProvider.appColor,
-                height: 45,
-                width: double.infinity,
-                child: Text(
-                  'Save'.tr,
-                  style: const TextStyle(
-                      letterSpacing: 1,
-                      fontSize: 16,
-                      color: ThemeProvider.whiteColor,
-                      fontFamily: 'bold'),
-                ),
-              ),
             ],
           ),
-        ));
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SelectLocationFromMap()),
+            );
+          },
+          shape: const CircleBorder(),
+          backgroundColor: Colors.white,
+          child: const Icon(Icons.add),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      );
     });
   }
 }
