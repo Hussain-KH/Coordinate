@@ -1,5 +1,6 @@
 import 'package:custom_map_markers/custom_map_markers.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import '../backend/model/point_model.dart';
 import '../backend/parse/route_parse.dart';
@@ -23,20 +24,120 @@ class RouteController extends GetxController implements GetxService {
   RxDouble widgetOpacity = 0.0.obs;
   RxList<GooglePlacesModel> getList = <GooglePlacesModel>[].obs;
   RxList<MarkerData> markers = <MarkerData>[].obs;
-  RxSet<Circle> circles = <Circle>{}.obs;
+  RxList<Circle> circles = <Circle>[].obs;
+  Rx<bool> isMarkerAdded = false.obs;
+  Rx<bool> isMarkerSelected = false.obs;
+  int selectedMarkerIndex = -1;
 
   void addPoint(Point point) {
-    // markers.add(
-    //   Marker(
-    //     markerId: MarkerId(markerId),
-    //     position: LatLng(point.latitude!, point.longitude!),
-    //   ),
-    // );
-    markers.add(
-      MarkerData(
-        marker: Marker(
+    if(checkIfMarkerInsideCircle(LatLng(point.latitude!, point.longitude!))){
+      isMarkerAdded.value = true;
+      markers.add(
+        MarkerData(
+          marker: Marker(
+            onTap: () {
+              isMarkerSelected.value = true;
+              selectedMarkerIndex = point.id!;
+            },
             markerId: MarkerId(point.id!.toString()),
             position: LatLng(point.latitude!, point.longitude!),
+
+          ),
+          child: Stack(
+            children: [
+              const Icon(
+                Icons.location_on,
+                color: Colors.blue,
+                size: 50,
+              ),
+              Positioned(
+                left: 15,
+                top: 8,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                      color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                  child: Center(child: Text(point.id!.toString())),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      // circles.add(
+      //   Circle(
+      //     circleId: CircleId(point.id!.toString()),
+      //     center: LatLng(point.latitude!, point.longitude!),
+      //     radius: 100,
+      //     strokeWidth: 0,
+      //     fillColor: Colors.blue
+      //         .withOpacity(0.2),
+      //   ),
+      // );
+      // circles.add(
+      //   Circle(
+      //     circleId: CircleId("${point.id!}2"),
+      //     center: LatLng(point.latitude!, point.longitude!),
+      //     radius: 200,
+      //     strokeWidth: 0,
+      //     fillColor: Colors.blue
+      //         .withOpacity(0.18),
+      //   ),
+      // );
+      // circles.add(
+      //   Circle(
+      //     circleId: CircleId("${point.id!}3"),
+      //     center: LatLng(point.latitude!, point.longitude!),
+      //     radius: 300,
+      //     strokeWidth: 0,
+      //     fillColor: Colors.blue
+      //         .withOpacity(0.16),
+      //   ),
+      // );
+      // circles.add(
+      //   Circle(
+      //     circleId: CircleId("${point.id!}4"),
+      //     center: LatLng(point.latitude!, point.longitude!),
+      //     radius: 450,
+      //     strokeWidth: 0,
+      //     fillColor: Colors.blue
+      //         .withOpacity(0.14),
+      //   ),
+      // );
+
+      circles.add(
+        Circle(
+          circleId: CircleId(point.id.toString()),
+          center: LatLng(point.latitude!, point.longitude!),
+          radius: 700,
+          strokeWidth: 0,
+          fillColor: Colors.blue
+              .withOpacity(0.12),
+        ),
+      );
+    } else {
+
+    }
+  }
+
+  void updatePoint(LatLng lastSelectedLatLng) {
+    print(selectedMarkerIndex.toString());
+    markers.removeWhere((marker) => marker.marker.markerId == MarkerId(selectedMarkerIndex.toString()));
+    circles.removeWhere((circle) => circle.circleId == CircleId(selectedMarkerIndex.toString()));
+    Point point = Point(id: selectedMarkerIndex, latitude: lastSelectedLatLng.latitude, longitude: lastSelectedLatLng.longitude);
+    markers.insert(
+      selectedMarkerIndex - 1,
+      MarkerData(
+        marker: Marker(
+          onTap: () {
+            isMarkerSelected.value = true;
+            selectedMarkerIndex = point.id!;
+          },
+          markerId: MarkerId(point.id!.toString()),
+          position: LatLng(point.latitude!, point.longitude!),
+
         ),
         child: Stack(
           children: [
@@ -55,65 +156,71 @@ class RouteController extends GetxController implements GetxService {
                     color: Colors.white, borderRadius: BorderRadius.circular(10)),
                 child: Center(child: Text(point.id!.toString())),
               ),
-            )
+            ),
           ],
         ),
       ),
     );
 
-    circles.add(
+    circles.insert(
+      selectedMarkerIndex - 1,
       Circle(
-        circleId: CircleId(point.id!.toString()),
+        circleId: CircleId(point.id.toString()),
         center: LatLng(point.latitude!, point.longitude!),
-        radius: 100,
-        strokeWidth: 0,
-        fillColor: Colors.blue
-            .withOpacity(0.2),
-      ),
-    );
-    circles.add(
-      Circle(
-        circleId: CircleId("${point.id!}2"),
-        center: LatLng(point.latitude!, point.longitude!),
-        radius: 200,
-        strokeWidth: 0,
-        fillColor: Colors.blue
-            .withOpacity(0.18),
-      ),
-    );
-    circles.add(
-      Circle(
-        circleId: CircleId("${point.id!}3"),
-        center: LatLng(point.latitude!, point.longitude!),
-        radius: 300,
-        strokeWidth: 0,
-        fillColor: Colors.blue
-            .withOpacity(0.16),
-      ),
-    );
-    circles.add(
-      Circle(
-        circleId: CircleId("${point.id!}4"),
-        center: LatLng(point.latitude!, point.longitude!),
-        radius: 450,
-        strokeWidth: 0,
-        fillColor: Colors.blue
-            .withOpacity(0.14),
-      ),
-    );
-    circles.add(
-      Circle(
-        circleId: CircleId("${point.id!}5"),
-        center: LatLng(point.latitude!, point.longitude!),
-        radius: 600,
+        radius: 700,
         strokeWidth: 0,
         fillColor: Colors.blue
             .withOpacity(0.12),
       ),
     );
+
+    removeMarkerSelection();
+    isMarkerAdded.value = true;
   }
 
-  void reorderPoints(oldIndex, newIndex) {
+  void deletePoint() {
+    print(selectedMarkerIndex.toString());
+    List<MarkerData> remainingMarkers = markers.sublist(selectedMarkerIndex);
+    markers.value = markers.sublist(0, selectedMarkerIndex - 1);
+    // ignore: invalid_use_of_protected_member
+    circles.value = circles.sublist(0, selectedMarkerIndex - 1);
+
+    for(int i = 0; i < remainingMarkers.length; i++){
+      LatLng oldMarker = remainingMarkers[i].marker.position;
+      Point point = Point(id: i + selectedMarkerIndex, latitude: oldMarker.latitude, longitude: oldMarker.longitude);
+      addPoint(point);
+    }
+
+    removeMarkerSelection();
+  }
+
+  void removeMarkerSelection() {
+    isMarkerSelected.value = false;
+    selectedMarkerIndex = -1;
+  }
+
+  bool checkIfMarkerInsideCircle(LatLng newMarker) {
+
+    for (Circle circle in circles) {
+      LatLng circleCenter = circle.center;
+      double circleRadius = circle.radius;
+
+      // Use the Google Maps geometry library to calculate distance between points
+      double distance = Geolocator.distanceBetween(
+        circleCenter.latitude,
+        circleCenter.longitude,
+        newMarker.latitude,
+        newMarker.longitude,
+      );
+
+      if (distance <= circleRadius) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  void reorderRoutes(oldIndex, newIndex) {
     final Point point = points.removeAt(oldIndex);
     points.insert(newIndex, point);
     update();

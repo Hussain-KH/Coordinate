@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:handyman/app/controller/route_controller.dart';
-import 'package:handyman/app/helper/router.dart';
 import 'package:handyman/app/view/route/select_route_from_map.dart';
 import 'package:handyman/app/widget/elevated_button.dart';
 
@@ -74,7 +73,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   onReorder: (oldIndex, newIndex) {
                     int targetIndex = newIndex > oldIndex ? newIndex - 1 : newIndex;
-                    value.reorderPoints(oldIndex, targetIndex);
+                    value.reorderRoutes(oldIndex, targetIndex);
                   },
                   children: [
                     for (int index = 0; index < value.points.length; index++)
