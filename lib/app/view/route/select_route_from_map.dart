@@ -13,7 +13,7 @@ import 'package:handyman/app/util/theme.dart';
 import 'package:handyman/app/view/route/route_params.dart';
 import 'package:handyman/app/widget/elevated_button.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:shimmer/shimmer.dart';
+//import 'package:shimmer/shimmer.dart';
 
 class SelectLocationFromMap extends StatefulWidget{
   const SelectLocationFromMap({super.key});
@@ -30,7 +30,7 @@ class _SelectLocationFromMapState extends State<SelectLocationFromMap> {
   Position? userCurrentPosition;
   static LatLng? _initialPosition;
   static CameraPosition? _cameraPosition;
-  LatLng? onCameraMoveEndLatLng;
+  CameraPosition? onCameraMoveEndLatLng;
   Uint8List pickUpMarker = Uint8List.fromList([]);
   final placeTextEditor = TextEditingController();
   RouteController? routeController;
@@ -56,7 +56,7 @@ class _SelectLocationFromMapState extends State<SelectLocationFromMap> {
     setState(() {
       _initialPosition =
           LatLng(userCurrentPosition!.latitude, userCurrentPosition!.longitude);
-      onCameraMoveEndLatLng = _initialPosition;
+      onCameraMoveEndLatLng = CameraPosition(target: _initialPosition!);
       lastSelectedLatLng = _initialPosition;
       _cameraPosition =
           CameraPosition(target: _initialPosition as LatLng, zoom: 14.5);
@@ -95,7 +95,7 @@ class _SelectLocationFromMapState extends State<SelectLocationFromMap> {
 
   void _getPinnedAddress() async {
     routeController!.isPinMarkerVisible.value = false;
-    await pickOriginPositionOnMap(onCameraMoveEndLatLng!);
+    await pickOriginPositionOnMap(onCameraMoveEndLatLng!.target);
     routeController!.isCameraMoving.value = false;
   }
 
@@ -151,11 +151,13 @@ class _SelectLocationFromMapState extends State<SelectLocationFromMap> {
                               // ignore: invalid_use_of_protected_member
                               circles: routeController!.circles.value.toSet(),
                               initialCameraPosition: _cameraPosition!,
-                              onCameraMove: (position) async {
+                              onCameraMoveStarted: () {
                                 routeController!.isCameraMoving.value = true;
                                 routeController!.isPinMarkerVisible.value = true;
                                 routeController!.isMarkerAdded.value = false;
-                                onCameraMoveEndLatLng = position.target;
+                              },
+                              onCameraMove: (position) async {
+                                onCameraMoveEndLatLng = position;
                               },
                               onCameraIdle: _getPinnedAddress,
                               onMapCreated: (GoogleMapController controller) {
@@ -183,25 +185,27 @@ class _SelectLocationFromMapState extends State<SelectLocationFromMap> {
                                 ),
                               ),
                             ),
+                            Center(
+                              child: Container(
+                                width:
+                                8.0,
+                                height: 8.0,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors
+                                      .black, // You can set the color you prefer
+                                ),
+                              ),
+                            ),
                             Obx(
                               () => Center(
-                                child: AnimatedSwitcher(
-                                  duration: const Duration(
-                                      milliseconds: 500),
-                                  child: routeController!.isPinMarkerVisible.value
-                                      || routeController!.isMarkerAdded.value
-                                      || routeController!.isMarkerSelected.value
-                                      ? Container(
-                                    width:
-                                    8.0,
-                                    height: 8.0,
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors
-                                          .black, // You can set the color you prefer
-                                    ),
-                                  )
-                                      : Image.memory(
+                                child: AnimatedOpacity(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.fastOutSlowIn,
+                                  opacity: !(routeController!.isPinMarkerVisible.value
+                                  || routeController!.isMarkerAdded.value
+                                  || routeController!.isMarkerSelected.value) ? 1 : 0,
+                                  child: Image.memory(
                                     pickUpMarker,
                                     height: 60,
                                     width: 60,
@@ -215,7 +219,7 @@ class _SelectLocationFromMapState extends State<SelectLocationFromMap> {
                                     },
                                   ),
                                 ),
-                              ),
+                              )
                             ),
                             SlidingUpPanel(
                               borderRadius: const BorderRadius.only(
@@ -260,116 +264,101 @@ class _SelectLocationFromMapState extends State<SelectLocationFromMap> {
                                   height: minHeight,
                                   child: Column(
                                     children: [
-                                      Shimmer.fromColors(
-                                        baseColor: Colors.grey.shade300,
-                                        highlightColor: Colors.grey.shade100,
-                                        period: const Duration(seconds: 2),
-                                        child: Padding(
-                                          padding: const EdgeInsets.fromLTRB(15, 10, 15, 0),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  borderRadius: const BorderRadius.all(Radius.circular(35)),
-                                                  color: Colors.grey.shade300,
-                                                ),
-                                                height: 5,
-                                                width: 70,
+                                      Padding(
+                                        padding: const EdgeInsets.fromLTRB(15, 10, 15, 0),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                borderRadius: const BorderRadius.all(Radius.circular(35)),
+                                                color: Colors.grey.shade300,
                                               ),
-                                              const SizedBox(height: 15.0),
-                                              Row(
-                                                children: [
-                                                  Container(
-                                                    decoration: BoxDecoration(
-                                                      shape: BoxShape.circle,
-                                                      color: Colors.grey.withOpacity(0.15),
-                                                    ),
-                                                    child: const Padding(
-                                                      padding: EdgeInsets.all(11.0),
-                                                      child: Icon(
-                                                        Icons.search,
-                                                        color: ThemeProvider.appColor,
-                                                        size: 30,
-                                                      ),
+                                              height: 5,
+                                              width: 70,
+                                            ),
+                                            const SizedBox(height: 15.0),
+                                            Row(
+                                              children: [
+                                                Container(
+                                                  decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: Colors.grey.withOpacity(0.15),
+                                                  ),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(11.0),
+                                                    child: Icon(
+                                                      Icons.search,
+                                                      color: ThemeProvider.appColor.withOpacity(0.3),
+                                                      size: 30,
                                                     ),
                                                   ),
-                                                  const SizedBox(
-                                                    width: 10.0,
-                                                  ),
-                                                  Expanded(
-                                                    child: Padding(
-                                                      padding: EdgeInsets.only(right: (MediaQuery.of(context).size.width * 0.2)),
-                                                      child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          Padding(
-                                                            padding: EdgeInsets.only(right: (MediaQuery.of(context).size.width * 0.25)),
-                                                            child: Container(
-                                                              height: 20,
-                                                              decoration: BoxDecoration(
-                                                                color: Colors.black,
-                                                                borderRadius: BorderRadius.circular(7.5), // Adjust the radius as needed
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          const SizedBox(height: 5,),
-                                                          Container(
-                                                            height: 15,
+                                                ),
+                                                const SizedBox(
+                                                  width: 10.0,
+                                                ),
+                                                Expanded(
+                                                  child: Padding(
+                                                    padding: EdgeInsets.only(right: (MediaQuery.of(context).size.width * 0.2)),
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        Padding(
+                                                          padding: EdgeInsets.only(right: (MediaQuery.of(context).size.width * 0.25)),
+                                                          child: Container(
+                                                            height: 20,
                                                             decoration: BoxDecoration(
-                                                              color: Colors.black,
+                                                              color: Colors.grey.shade300,
                                                               borderRadius: BorderRadius.circular(7.5), // Adjust the radius as needed
                                                             ),
                                                           ),
-                                                        ],
-                                                      ),
+                                                        ),
+                                                        const SizedBox(height: 5,),
+                                                        Container(
+                                                          height: 15,
+                                                          decoration: BoxDecoration(
+                                                            color: Colors.grey.shade300,
+                                                            borderRadius: BorderRadius.circular(7.5), // Adjust the radius as needed
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
-                                                ],
-                                              ),
-                                              SizedBox(height: minHeight - 185),
-                                              if(!routeController!.isMarkerSelected.value)
-                                                Column(
-                                                children: [
-                                                  Padding(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                                    child: MyElevatedButton(
-                                                      onPressed: () {},
-                                                      color: ThemeProvider.appColor,
-                                                      height: 40,
-                                                      width: double.infinity,
-                                                      child: const Text(
-                                                        '',
-                                                        style: TextStyle(
-                                                            letterSpacing: 1,
-                                                            fontSize: 16,
-                                                            color: ThemeProvider.whiteColor,
-                                                            fontFamily: 'bold'),
-                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                            SizedBox(height: minHeight - 185),
+                                            if(!routeController!.isMarkerSelected.value)
+                                              Column(
+                                              children: [
+                                                Padding(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                                  child: MyElevatedButton(
+                                                    onPressed: () {},
+                                                    color: Colors.grey.shade300,
+                                                    height: 40,
+                                                    width: double.infinity,
+                                                    child: const Text(
+                                                      ''
                                                     ),
                                                   ),
-                                                  const SizedBox(height: 5,),
-                                                  Padding(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                                    child: MyElevatedButton(
-                                                      onPressed: () {},
-                                                      color: ThemeProvider.appColor,
-                                                      height: 40,
-                                                      width: double.infinity,
-                                                      child: const Text(
-                                                        '',
-                                                        style: TextStyle(
-                                                            letterSpacing: 1,
-                                                            fontSize: 16,
-                                                            color: ThemeProvider.whiteColor,
-                                                            fontFamily: 'bold'),
-                                                      ),
+                                                ),
+                                                const SizedBox(height: 5,),
+                                                Padding(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                                  child: MyElevatedButton(
+                                                    onPressed: () {},
+                                                    color: Colors.grey.shade300,
+                                                    height: 40,
+                                                    width: double.infinity,
+                                                    child: const Text(
+                                                      '',
                                                     ),
                                                   ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
                                         ),
                                       ),
                                       if(routeController!.isMarkerSelected.value)

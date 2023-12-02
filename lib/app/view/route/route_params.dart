@@ -49,9 +49,10 @@ class SelectDaysWidget extends StatefulWidget {
 
 class _SelectDaysWidgetState extends State<SelectDaysWidget> {
   List<bool> selectedDays = [false, false, false, false, false, false, false];
-
   TimeOfDay? startTime;
   TimeOfDay? endTime;
+  String selectedVehicle = '';
+
 
   Future<void> _selectStartTime(BuildContext context) async {
     final pickedTime = await showTimePicker(
@@ -129,7 +130,7 @@ class _SelectDaysWidgetState extends State<SelectDaysWidget> {
           ),
 
           const SizedBox(
-            height: 20,
+            height: 35,
           ),
 
           Padding(
@@ -139,6 +140,9 @@ class _SelectDaysWidgetState extends State<SelectDaysWidget> {
               style: const TextStyle(
                   letterSpacing: 1, fontSize: 16, fontFamily: 'bold'),
             ),
+          ),
+          const SizedBox(
+            height: 10,
           ),
           Row(
             children: [
@@ -179,6 +183,64 @@ class _SelectDaysWidgetState extends State<SelectDaysWidget> {
               const SizedBox(
                 width: 15,
               ),
+            ],
+          ),
+
+          const SizedBox(
+            height: 35,
+          ),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+            child: Text(
+              'Select Vehicle'.tr,
+              style: const TextStyle(
+                  letterSpacing: 1, fontSize: 16, fontFamily: 'bold'),
+            ),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    selectedVehicle = 'Car';
+                  });
+                },
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.directions_car,
+                      size: 48,
+                      color: selectedVehicle == 'Car' ? ThemeProvider.appColor : Colors.black,
+                    ),
+                    const SizedBox(height: 4),
+                    const Text('Car'),
+                  ],
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    selectedVehicle = 'Bus';
+                  });
+                },
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.directions_bus,
+                      size: 48,
+                      color: selectedVehicle == 'Bus' ? ThemeProvider.appColor : Colors.black,
+                    ),
+                    const SizedBox(height: 4),
+                    const Text('Bus'),
+                  ],
+                ),
+              ),
+
             ],
           ),
 
