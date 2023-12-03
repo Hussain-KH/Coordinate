@@ -38,44 +38,44 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
         ),
         body: Container(
           padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              Expanded(
-                child: ReorderableListView(
-                  proxyDecorator: (Widget child, int index, Animation<double> animation) {
-                    return Material(
-                      elevation: 3.0,
-                      shadowColor: ThemeProvider.appColor,
-                      borderRadius: BorderRadius.circular(15),
-                      child: SizeTransition(
-                        sizeFactor: animation,
-                        child: child,
-                      ),
-                    );
-                  },
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  onReorder: (oldIndex, newIndex) {
-                    int targetIndex = newIndex > oldIndex ? newIndex - 1 : newIndex;
-                    value.reorderRoutes(oldIndex, targetIndex);
-                  },
-                  children: [
-                    for (int index = 0; index < value.points.length; index++)
-                    Card(
-                      key: ValueKey(value.points[index]),
-                      child: ListTile(
-                        onTap: () {},
-                        visualDensity: const VisualDensity(vertical: -3),
-                        leading: const Icon(Icons.location_on_outlined),
-                        minLeadingWidth: 0,
-                        title: heading4(value.points[index].placeHeader),
-                        trailing: const Icon(Icons.drag_handle),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ],
-          ),
+          // child: Column(
+          //   children: [
+          //     Expanded(
+          //       child: ReorderableListView(
+          //         proxyDecorator: (Widget child, int index, Animation<double> animation) {
+          //           return Material(
+          //             elevation: 3.0,
+          //             shadowColor: ThemeProvider.appColor,
+          //             borderRadius: BorderRadius.circular(15),
+          //             child: SizeTransition(
+          //               sizeFactor: animation,
+          //               child: child,
+          //             ),
+          //           );
+          //         },
+          //         padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          //         onReorder: (oldIndex, newIndex) {
+          //           int targetIndex = newIndex > oldIndex ? newIndex - 1 : newIndex;
+          //           value.reorderRoutes(oldIndex, targetIndex);
+          //         },
+          //         children: [
+          //           for (int index = 0; index < value.points.length; index++)
+          //           Card(
+          //             key: ValueKey(value.points[index]),
+          //             child: ListTile(
+          //               onTap: () {},
+          //               visualDensity: const VisualDensity(vertical: -3),
+          //               leading: const Icon(Icons.location_on_outlined),
+          //               minLeadingWidth: 0,
+          //               title: heading4(value.points[index].placeHeader),
+          //               trailing: const Icon(Icons.drag_handle),
+          //             ),
+          //           )
+          //         ],
+          //       ),
+          //     ),
+          //   ],
+          // ),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {

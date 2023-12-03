@@ -49,7 +49,7 @@ class _SelectLocationFromMapState extends State<SelectLocationFromMap> {
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.bestForNavigation);
     userCurrentPosition = position;
-    pickUpMarker = await getMarker("location-pin");
+    pickUpMarker = await getMarker("location-pin2");
     await pickOriginPositionOnMap(
         LatLng(userCurrentPosition!.latitude, userCurrentPosition!.longitude));
 
@@ -197,30 +197,28 @@ class _SelectLocationFromMapState extends State<SelectLocationFromMap> {
                                 ),
                               ),
                             ),
-                            Obx(
-                              () => Center(
-                                child: AnimatedOpacity(
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.fastOutSlowIn,
-                                  opacity: !(routeController!.isPinMarkerVisible.value
-                                  || routeController!.isMarkerAdded.value
-                                  || routeController!.isMarkerSelected.value) ? 1 : 0,
+                            Obx(() {
+                              final bool shouldShowMarker = !(routeController!.isPinMarkerVisible.value ||
+                                  routeController!.isMarkerAdded.value ||
+                                  routeController!.isMarkerSelected.value);
+                              return Center(
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 125),
+                                  height: shouldShowMarker ? 120 : 0,
+                                  width: shouldShowMarker ? 120 : 0,
                                   child: Image.memory(
                                     pickUpMarker,
-                                    height: 60,
-                                    width: 60,
                                     alignment: Alignment.center,
-                                    frameBuilder: (context, child, frame,
-                                        wasSynchronouslyLoaded) {
+                                    frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
                                       return Transform.translate(
-                                        offset: const Offset(0, -25),
+                                        offset: const Offset(0, 0),
                                         child: child,
                                       );
                                     },
                                   ),
                                 ),
-                              )
-                            ),
+                              );
+                            }),
                             SlidingUpPanel(
                               borderRadius: const BorderRadius.only(
                                 topLeft: Radius.circular(

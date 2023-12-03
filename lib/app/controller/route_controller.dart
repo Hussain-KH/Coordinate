@@ -2,6 +2,7 @@ import 'package:custom_map_markers/custom_map_markers.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:handyman/app/backend/model/route_model.dart';
 import '../backend/model/point_model.dart';
 import '../backend/parse/route_parse.dart';
 import 'package:handyman/app/backend/api/handler.dart';
@@ -16,19 +17,23 @@ class RouteController extends GetxController implements GetxService {
   final RouteParser parser;
   RouteController({required this.parser});
 
-  List<Point> points = [];
+  //List<Point> points = [];
   Rx<Point> pinnedLocationOnMap = Point().obs;
   Rx<bool> isPinMarkerVisible = false.obs;
   Rx<bool> isExpanded = false.obs;
   Rx<bool> isCameraMoving = false.obs;
   RxDouble widgetOpacity = 0.0.obs;
   RxList<GooglePlacesModel> getList = <GooglePlacesModel>[].obs;
-  RxList<MarkerData> markers = <MarkerData>[].obs;
   RxList<Circle> circles = <Circle>[].obs;
   Rx<bool> isMarkerAdded = false.obs;
   Rx<bool> isMarkerSelected = false.obs;
   int selectedMarkerIndex = -1;
   String intersectCircleId = '';
+
+  RxList<MarkerData> markers = <MarkerData>[].obs;
+  RxList<bool> selectedDays = [false, false, false, false, false, false, false].obs;
+  Rx<TimeOfDay?> startingTime = Rx<TimeOfDay?>(null);
+  Rx<String> selectedVehicle = ''.obs;
 
   void addPoint(Point point, BuildContext? context) {
     if(checkIfMarkerInsideCircle(LatLng(point.latitude!, point.longitude!))){
@@ -172,7 +177,6 @@ class RouteController extends GetxController implements GetxService {
       );
 
       if (distance <= circleRadius) {
-        print('Marker is inside Circle: ${circle.circleId.value}');
         intersectCircleId = circle.circleId.value;
         return false;
       }
@@ -185,11 +189,41 @@ class RouteController extends GetxController implements GetxService {
     selectedMarkerIndex = -1;
   }
 
-  void reorderRoutes(oldIndex, newIndex) {
-    final Point point = points.removeAt(oldIndex);
-    points.insert(newIndex, point);
-    update();
+  Future<void> selectStartTime(BuildContext context) async {
+    startingTime.value = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
   }
+
+  void selectDays(int index) {
+    selectedDays[index] = !selectedDays[index];
+  }
+
+  Future<void> saveRoute() async {
+    List<LatLng> routePoints = markers.map((element) => element.marker.position).toList();
+
+    MapRoute route = MapRoute(
+        routePoints: routePoints,
+        selectedDays: selectedDays,
+        startingTimeHour: startingTime.value!.hour,
+        startingTimeMinute: startingTime.value!.minute,
+        selectedVehicle: selectedVehicle.value
+    );
+
+    print('sdsd');
+    print(route.selectedDays.toString());
+    print(route.startingTimeHour.toString());
+    print(route.startingTimeMinute.toString());
+    print(route.selectedVehicle.toString());
+    print(route.routePoints.toString());
+  }
+
+  // void reorderRoutes(oldIndex, newIndex) {
+  //   final Point point = points.removeAt(oldIndex);
+  //   points.insert(newIndex, point);
+  //   update();
+  // }
 
   void onBack() {
     var context = Get.context as BuildContext;
