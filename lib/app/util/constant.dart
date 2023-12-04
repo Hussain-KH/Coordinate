@@ -137,6 +137,7 @@ class AppConstants {
   static const String sendNotification = 'api/v1/notification/sendNotification';
   static const String logout = 'api/v1/auth/user_logout';
   // API Routes
+  static const String saveRoute = 'api/v1/route/save';
 
   static List<LanguageModel> languages = [
     LanguageModel(

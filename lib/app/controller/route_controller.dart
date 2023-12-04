@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:handyman/app/backend/model/route_model.dart';
+import 'package:handyman/app/util/toast.dart';
 import '../backend/model/point_model.dart';
 import '../backend/parse/route_parse.dart';
 import 'package:handyman/app/backend/api/handler.dart';
@@ -211,12 +212,26 @@ class RouteController extends GetxController implements GetxService {
         selectedVehicle: selectedVehicle.value
     );
 
-    print('sdsd');
-    print(route.selectedDays.toString());
-    print(route.startingTimeHour.toString());
-    print(route.startingTimeMinute.toString());
-    print(route.selectedVehicle.toString());
-    print(route.routePoints.toString());
+    var body = {
+      "uid": parser.getUID(),
+      "route": route.toJson(),
+      "status": 1
+    };
+
+    var response = await parser.saveRoute(body);
+    //Get.back();
+
+    debugPrint('sdsdsd');
+    debugPrint(response.bodyString);
+
+    if (response.statusCode == 200) {
+      //debugPrint(response.bodyString);
+      successToast('Successfully Added'.tr);
+      //onBack();
+    } else {
+      ApiChecker.checkApi(response);
+    }
+    // update();
   }
 
   // void reorderRoutes(oldIndex, newIndex) {
